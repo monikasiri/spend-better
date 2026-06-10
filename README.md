@@ -1,54 +1,36 @@
 # Spend Better
 
-A personal budgeting app I built to actually keep track of where my money goes. Income, expenses, budgets, savings goals, account balances, all in one place.
-
-It runs entirely in your browser. No accounts, no signups, no servers, nothing leaving your machine.
-
-Built with React, Vite, and Tailwind.
+Spend Better is a clean personal budgeting app built with React, Vite, and Tailwind CSS. Track income, expenses, budgets, and savings goals across multiple accounts with split transactions and tag-based filtering.
 
 ## Features
 
-**Multiple accounts.** Checking, savings, credit cards, cash. Every transaction links to an account so the balances actually mean something. Credit cards are treated as debt, so spending pulls the balance down and payments bring it back up.
+- **First-run onboarding** - welcome flow that lets you pick which accounts to set up before you start
+- **Guided tour** - 5-step tour highlights how the app works after onboarding. Replayable from the footer.
+- **Inline help tips** - small ? icons next to non-obvious features (Split, Tags, Recurring, Goals, Budgets) explain what they do.
+- **Multiple accounts** - checking, savings, credit card, cash. Net worth computed across all of them. Credit cards correctly track as debt.
+- **Transaction splitting** - split a single purchase across multiple categories. Charts and budgets respect the split.
+- **Tags** - free-form tags on any transaction. Filter by tag, see tag-based spending breakdowns.
+- **Recurring transactions** - auto-track monthly bills and salary.
+- **Savings goals** - set targets with deadlines, track progress, see how much per month is needed to hit them.
+- **Budgets** - monthly limits per category with warnings at 80% and 100%.
+- **Smart insights** - auto-generated analysis (top category, biggest jumps, reimbursable totals, credit card debt warnings).
+- **Charts** - category pie, 6-month income/expenses bar, 12-month net worth line.
+- **CSV import/export** - bring in data, take it out.
+- **Sample data on demand** - clean by default, but a "Load sample data" button lets you populate the app to explore features.
+- **Reset all data** - wipe everything and start over from the footer link.
+- **Dark mode**, **keyboard shortcuts** (1-6 for tabs, N for add transaction).
+- **All data persisted locally** via localStorage. No backend, no signups.
 
-**Splitting.** One purchase can hit multiple categories. A $120 Costco run might be $80 food, $30 household, $10 health. The charts and budgets respect the split, so each category only counts its own slice instead of the whole receipt.
-
-**Tags.** Throw whatever tags you want on a transaction (vacation, reimbursable, side hustle, taxes) and filter on them later.
-
-**Recurring transactions.** Rent, salary, subscriptions, bills. Save them once as templates instead of retyping the same thing every month. Pause or delete them from the Recurring tab whenever.
-
-**Savings goals.** Set a target and a deadline for whatever you're saving toward and the app tracks your progress and tells you how much to put away each month.
-
-**Monthly budgets.** Set a limit per category. The useful part is the pacing check: it doesn't just wait until you hit 100%, it notices when you're spending too fast. Burning $50 of a $100 budget by day 3 gets flagged early, because you're clearly on track to blow past it.
-
-**Insights.** The dashboard surfaces quick observations from your data, like your biggest category, how this month compares to last, what's reimbursable, credit card debt warnings, and your savings rate. They refresh as the numbers change.
-
-**Charts.** Three on the dashboard: spending by category this month, income vs expenses over the last 6 months, and net worth over the last 12.
-
-**Quick add presets.** One-click buttons for the stuff you buy constantly (coffee, lunch, gas, groceries) so logging small spending isn't a chore.
-
-**Month navigation.** Jump between months from the header. Past months show what actually happened. The current month uses the pacing logic so early spending doesn't look like a disaster.
-
-**CSV import and export.** Pull transactions in from a CSV or dump everything out for taxes, backups, or your own records.
-
-**Sample data.** Starts clean, but you can load sample data to poke around first. There's a reset in the footer to wipe everything and start fresh.
-
-**Guided tour.** A short walkthrough after onboarding, replayable from the footer, plus tooltips on the trickier features like splits, tags, recurring, goals, and budgets.
-
-**Dark mode and shortcuts.**
-- `1` through `6` switch tabs
-- `N` adds a transaction
-- `Esc` closes a modal
-
-## Running it locally
+## Run it
 
 ```bash
 npm install
 npm run dev
 ```
 
-Then open http://localhost:5173.
+Open http://localhost:5173
 
-## Production build
+## Build for production
 
 ```bash
 npm run build
@@ -57,8 +39,52 @@ npm run preview
 
 ## Stack
 
-React, Vite, Tailwind CSS, Recharts, and LocalStorage for persistence.
+- React 18 + Vite
+- Tailwind CSS
+- Chart.js + react-chartjs-2
+- Tabler Icons (via CDN)
+- Inter + JetBrains Mono fonts
 
-## A note on your data
+## Project structure
 
-Spend Better doesn't connect to a bank or send anything anywhere. Everything lives in your browser's local storage. That also means clearing your browser data clears your transactions, so use the CSV export if you want a backup.
+```
+src/
+  components/        UI components (panels, modals, charts, form)
+  hooks/             useLocalStorage, useDarkMode
+  utils/             formatters, calculations, csv
+  data/              constants, seed (empty defaults + demo generator)
+  App.jsx            main orchestrator
+  main.jsx           entry point
+  index.css          Tailwind + custom classes
+```
+
+## Architecture notes
+
+- **First-run flow:** The app checks `ft_onboarded` in localStorage. If missing and no accounts exist, the welcome modal renders. Users either pick suggested accounts (with editable names and starting balances) or skip to load sample data.
+- **State lives in `App.jsx`** and flows down via props. Persistence is automatic via `useLocalStorage`.
+- **Account balances** derive from the start balance plus all linked transactions, with credit cards using inverted math (expenses subtract from balance, payments add).
+- **Split transactions** store an array of `{category, amount}` objects. The category breakdown logic checks for splits first and falls back to the single category.
+- **Tags** are simple string arrays. Autocomplete suggestions come from the union of all existing tags.
+- **Charts** use `react-chartjs-2` for declarative wrappers around Chart.js.
+
+## Keyboard shortcuts
+
+| Key | Action |
+|---|---|
+| 1 | Dashboard |
+| 2 | Accounts |
+| 3 | Transactions |
+| 4 | Budgets |
+| 5 | Goals |
+| 6 | Recurring |
+| N | Jump to add transaction |
+| Esc | Close any modal |
+
+
+## Recent cleanup
+
+- Recurring templates now generate the latest due transaction without creating duplicates.
+- Split transactions stay balanced when an edited amount changes.
+- CSV import restores split transactions instead of flattening them into one category.
+- Dashboard insights render as React content instead of injected HTML.
+- New records use stronger browser-generated IDs when available.
